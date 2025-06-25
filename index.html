@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRUTE - Cookies Artesanais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Link da Adobe Fonts adicionado -->
+    <link rel="stylesheet" href="https://use.typekit.net/zqs0mox.css">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos de Fontes e Animações */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace; /* Fonte para os textos corridos */
+            cursor: none;
+            overflow: hidden; 
+        }
+        body.loaded {
+            overflow: auto;
+        }
+        /* Classe agora usa a fonte Flyswim */
+        .font-flyswim {
+            font-family: "flyswim", sans-serif;
+            font-weight: 400; /* Peso da fonte 'regular' */
+            font-style: normal;
+        }
+        .tracking-widest {
+            letter-spacing: .15em;
+        }
+
+        /* --- Início da Splash Screen --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            transition: opacity 1.2s ease-in-out;
+            opacity: 1;
+        }
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #splash-screen img {
+            width: 260px;
+            height: auto;
+            animation: stampIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes stampIn {
+            0% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        #scroll-indicator {
+            position: absolute;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            opacity: 0;
+            animation: fadeIn 1s ease-in 1s forwards;
+        }
+        #scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            margin: 0 auto;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        /* --- Fim da Splash Screen --- */
+
+        /* --- Início do Cursor Personalizado --- */
+        #custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.4s ease-in-out;
+        }
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(2.5);
+        }
+        a, button, [onclick] { cursor: none; }
+        /* --- Fim do Cursor Personalizado --- */
+
+        /* --- Animações Gerais --- */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* --- Animação para a seção Hero --- */
+        .hero-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        body.loaded .hero-element {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        body.loaded .hero-title-container { transition-delay: 0.2s; }
+        body.loaded .hero-p { transition-delay: 0.6s; }
+        body.loaded .hero-button { transition-delay: 0.8s; }
+
+        /* --- Animação de Giro 3D (Flip) --- */
+        #word-container {
+            display: inline-block;
+            perspective: 800px;
+            vertical-align: bottom;
+        }
+        .letter {
+            display: inline-block;
+            animation-duration: 0.6s;
+            animation-fill-mode: forwards;
+            animation-timing-function: ease-in-out;
+        }
+        .letter.entering {
+            animation-name: flipIn;
+        }
+        .letter.exiting {
+            animation-name: flipOut;
+        }
+        @keyframes flipIn {
+            from { transform: rotateX(90deg); opacity: 0; }
+            to { transform: rotateX(0deg); opacity: 1; }
+        }
+        @keyframes flipOut {
+            from { transform: rotateX(0deg); opacity: 1; }
+            to { transform: rotateX(-90deg); opacity: 0; }
+        }
+        
+        /* Overlay da transição de página */
+        #page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #page-transition-overlay.is-active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        #page-transition-overlay img {
+            transition: transform 0.4s ease-in-out;
+            transform: scale(0.8);
+        }
+        #page-transition-overlay.is-active img {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-white text-black">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <img src="imagens/brutew.webp" alt="Logo BRUTE">
+        <div id="scroll-indicator">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Cursor Personalizado -->
+    <div id="custom-cursor"></div>
+
+    <!-- Overlay de Transição de Página -->
+    <div id="page-transition-overlay">
+        <img class="h-16 w-auto" src="imagens/brutew.webp" alt="Logo BRUTE">
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-6 py-5 flex justify-between items-center">
+            <div class="text-2xl font-black font-flyswim uppercase">
+                <a href="#">
+                     <!-- Logo como Imagem -->
+                    <img class="h-10 w-auto" src="imagens/brute.webp" alt="Logo BRUTE">
+                </a>
+            </div>
+            <div class="hidden md:flex space-x-10 text-sm font-medium tracking-widest uppercase">
+                <a href="#menu" class="text-gray-800 hover:text-black transition-colors duration-300">Menu</a>
+                <a href="#sobre" class="text-gray-800 hover:text-black transition-colors duration-300">Quem Somos</a>
+                <a href="#contato" class="text-gray-800 hover:text-black transition-colors duration-300">Encomendas</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-black focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 border-t border-gray-200">
+            <a href="#menu" class="block py-2 text-sm uppercase tracking-widest text-gray-800 hover:text-black">Menu</a>
+            <a href="#sobre" class="block py-2 text-sm uppercase tracking-widest text-gray-800 hover:text-black">Quem Somos</a>
+            <a href="#contato" class="block py-2 text-sm uppercase tracking-widest text-gray-800 hover:text-black">Encomendas</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-white overflow-hidden">
+        <div class="container mx-auto px-6 py-24 md:py-32 flex flex-col justify-center text-left">
+            <div class="w-full">
+                <h1 class="font-flyswim text-5xl md:text-7xl lg:text-8xl uppercase leading-none hero-element hero-title-container">
+                    <span class="text-gray-200">COOKIES</span>
+                    <span id="word-container" class="text-black">
+                        <!-- Letras inseridas pelo JS -->
+                    </span>
+                </h1>
+                <p class="text-lg text-gray-600 max-w-md mt-8 hero-element hero-p">Feitos à mão, um de cada vez. O sabor que você nunca vai esquecer.</p>
+                <a href="#menu" class="mt-8 bg-black text-white font-bold py-4 px-10 rounded-md hover:bg-gray-800 transition-colors duration-300 inline-block hero-element hero-button">VER O MENU</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Menu Section -->
+    <section id="menu" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12 animate-on-scroll">
+                <h2 class="text-4xl font-flyswim uppercase">Nosso Menu</h2>
+                <p class="text-gray-500 mt-2">Sabores que contam uma história.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cookie Item 1 -->
+                <div class="text-center group animate-on-scroll">
+                    <div class="overflow-hidden rounded-lg mb-4">
+                        <img src="https://placehold.co/600x600/ffffff/000000?text=Cookie+de+Chocolate" alt="Cookie de Chocolate" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <h3 class="text-xl font-flyswim uppercase">Clássico de Chocolate</h3>
+                    <p class="text-gray-500 mb-2">Massa de baunilha, chocolate belga.</p>
+                    <span class="text-lg font-bold">R$ 12,00</span>
+                </div>
+                <!-- Cookie Item 2 -->
+                <div class="text-center group animate-on-scroll" style="transition-delay: 200ms;">
+                    <div class="overflow-hidden rounded-lg mb-4">
+                        <img src="https://placehold.co/600x600/f5f5f5/000000?text=Cookie+Red+Velvet" alt="Cookie Red Velvet" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <h3 class="text-xl font-flyswim uppercase">Red Velvet</h3>
+                    <p class="text-gray-500 mb-2">Com gotas de chocolate branco.</p>
+                    <span class="text-lg font-bold">R$ 13,00</span>
+                </div>
+                <!-- Cookie Item 3 -->
+                <div class="text-center group animate-on-scroll" style="transition-delay: 400ms;">
+                    <div class="overflow-hidden rounded-lg mb-4">
+                        <img src="https://placehold.co/600x600/ffffff/000000?text=Cookie+Duplo+Chocolate" alt="Cookie Duplo Chocolate" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <h3 class="text-xl font-flyswim uppercase">Duplo Chocolate</h3>
+                    <p class="text-gray-500 mb-2">Massa de cacau, chocolate 70%.</p>
+                    <span class="text-lg font-bold">R$ 13,00</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="sobre" class="bg-white py-20 overflow-hidden">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row-reverse items-center gap-12">
+            <div class="md:w-1/2 animate-on-scroll">
+                <img src="https://placehold.co/600x700/f0f0f0/000000?text=Ingredientes" alt="Ingredientes de qualidade" class="rounded-lg shadow-sm w-full">
+            </div>
+            <div class="md:w-1/2 text-center md:text-left animate-on-scroll" style="transition-delay: 200ms;">
+                <h2 class="text-4xl font-flyswim uppercase">Nossa Filosofia</h2>
+                <p class="text-gray-600 my-6 leading-relaxed">Acreditamos no poder dos ingredientes de verdade. Manteiga de qualidade, chocolate nobre e nada de conservantes. Cada cookie é pesado, moldado e assado com a atenção que uma obra de arte merece. Para nós, não é apenas um doce, é uma experiência.</p>
+                <a href="#contato" class="text-black font-bold group">
+                    <span>Faça sua encomenda</span>
+                    <span class="ml-2 transition-transform duration-300 group-hover:ml-4">&rarr;</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contato" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 text-center">
+            <div class="animate-on-scroll">
+                <h2 class="text-4xl md:text-5xl font-flyswim uppercase">Peça os seus!</h2>
+                <p class="text-lg text-gray-700 max-w-2xl mx-auto my-6">Estamos prontos para adoçar o seu dia. Encomende para seu evento, para presentear alguém especial ou simplesmente para você.</p>
+                <a href="https://wa.me/5511999999999" target="_blank" class="bg-black hover:bg-gray-800 text-white font-bold py-4 px-10 rounded-md text-lg transition duration-300 inline-flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zM223.9 439.6c-38.2 0-73.7-10.1-103.6-28.2l-7.5-4.4-77.1 20.3 20.7-75.2-4.9-7.8c-19.8-31.9-30.3-68.5-30.3-107.2 0-108.9 88.5-197.3 197.3-197.3 54.5 0 104.2 21.2 140.2 57.2 36 36 57.2 85.7 57.2 140.2 0 108.9-88.5 197.3-197.3 197.3z"/></svg>
+                    CHAMAR NO WHATSAPP
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-10">
+        <div class="container mx-auto px-6 text-center">
+            <!-- Logo como Imagem -->
+            <img class="h-8 w-auto mx-auto mb-4" src="imagens/brutew.webp" alt="Logo BRUTE">
+            <p class="text-gray-400 text-sm mt-2">&copy; 2024. Todos os direitos reservados.</p>
+            <div class="flex justify-center space-x-6 mt-6">
+                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Instagram</a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Facebook</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splash-screen');
+            const body = document.body;
+            let rotationStarted = false;
+
+            function hideSplashScreen() {
+                if (body.classList.contains('loaded')) return;
+                
+                body.classList.add('loaded');
+                if (splashScreen) {
+                    splashScreen.style.opacity = '0';
+                    splashScreen.addEventListener('transitionend', () => {
+                        if (splashScreen) splashScreen.remove();
+                    });
+                }
+                
+                if (!rotationStarted) {
+                    startWordRotation();
+                    rotationStarted = true;
+                }
+            }
+            
+            window.addEventListener('wheel', hideSplashScreen, { once: true });
+            window.addEventListener('touchmove', hideSplashScreen, { once: true });
+            window.addEventListener('keydown', hideSplashScreen, { once: true });
+
+            const cursor = document.getElementById('custom-cursor');
+            if (cursor) {
+                document.addEventListener('mousemove', function(e) {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                });
+            }
+
+            function startWordRotation() {
+                const wordContainer = document.getElementById('word-container');
+                if (!wordContainer) return;
+
+                const words = ['GIGANTES', 'BRUTAIS', 'MONSTROS'];
+                let currentIndex = 0;
+                let isAnimating = false;
+
+                const changeWord = () => {
+                    if (isAnimating) return;
+                    isAnimating = true;
+
+                    const currentLetters = wordContainer.querySelectorAll('.letter');
+                    
+                    currentLetters.forEach((letter, i) => {
+                        setTimeout(() => {
+                            letter.classList.add('exiting');
+                        }, i * 40);
+                    });
+
+                    setTimeout(() => {
+                        currentIndex = (currentIndex + 1) % words.length;
+                        const nextWord = words[currentIndex];
+                        wordContainer.innerHTML = ''; 
+
+                        nextWord.split('').forEach((char, i) => {
+                            const span = document.createElement('span');
+                            span.className = 'letter entering';
+                            span.style.animationDelay = `${i * 50}ms`;
+                            span.textContent = char;
+                            wordContainer.appendChild(span);
+                        });
+
+                        const totalAnimationTime = 600 + (nextWord.length * 50);
+                        setTimeout(() => {
+                            isAnimating = false;
+                        }, totalAnimationTime);
+
+                    }, 400); 
+                };
+
+                words[0].split('').forEach((char) => {
+                    const span = document.createElement('span');
+                    span.className = 'letter';
+                    span.textContent = char;
+                    wordContainer.appendChild(span);
+                });
+                
+                wordContainer.addEventListener('mouseenter', changeWord);
+            }
+            
+            const bodyObserver = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'class' && body.classList.contains('loaded')) {
+                        startWordRotation();
+                        bodyObserver.disconnect();
+                    }
+                });
+            });
+            bodyObserver.observe(body, { attributes: true });
+
+
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+            
+            const closeMobileMenu = () => {
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+            const transitionOverlay = document.getElementById('page-transition-overlay');
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                 if(link.getAttribute('href') && link.getAttribute('href').length > 1){
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        const targetSection = document.querySelector(targetId);
+
+                        if (targetSection && transitionOverlay) {
+                            closeMobileMenu();
+                            transitionOverlay.classList.add('is-active');
+                            setTimeout(() => {
+                                targetSection.scrollIntoView({ behavior: 'smooth' });
+                                setTimeout(() => transitionOverlay.classList.remove('is-active'), 550);
+                            }, 500);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
