@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRUTE - Cookies Fodas!</title>
+    <link rel="icon" type="image/webp" href="/imagens/brutefav.webp">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +17,7 @@
         }
         body {
             font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+            cursor: none;
             overflow: hidden; 
         }
         body.loaded {
@@ -91,6 +93,26 @@
             60% { transform: translateY(-5px); }
         }
         /* --- Fim da Splash Screen --- */
+
+        /* --- Início do Cursor Personalizado --- */
+        #custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.4s ease-in-out;
+        }
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(2.5);
+        }
+        a, button, [onclick] { cursor: none; }
+        /* --- Fim do Cursor Personalizado --- */
 
         /* --- Animações Gerais --- */
         .animate-on-scroll {
@@ -188,6 +210,9 @@
             </svg>
         </div>
     </div>
+
+    <!-- Cursor Personalizado -->
+    <div id="custom-cursor"></div>
 
     <!-- Overlay de Transição de Página -->
     <div id="page-transition-overlay">
@@ -323,7 +348,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Script para Splash Screen e Animações de Entrada ---
             const splashScreen = document.getElementById('splash-screen');
             const body = document.body;
             let rotationStarted = false;
@@ -338,24 +362,24 @@
                         if (splashScreen) splashScreen.remove();
                     });
                 }
+                
+                if (!rotationStarted) {
+                    startWordRotation();
+                    rotationStarted = true;
+                }
             }
             
             window.addEventListener('wheel', hideSplashScreen, { once: true });
             window.addEventListener('touchmove', hideSplashScreen, { once: true });
             window.addEventListener('keydown', hideSplashScreen, { once: true });
-            
-            const bodyObserver = new MutationObserver(mutations => {
-                mutations.forEach(mutation => {
-                    if (mutation.attributeName === 'class' && body.classList.contains('loaded')) {
-                        if (!rotationStarted) {
-                            startWordRotation();
-                            rotationStarted = true;
-                        }
-                        bodyObserver.disconnect();
-                    }
+
+            const cursor = document.getElementById('custom-cursor');
+            if (cursor) {
+                document.addEventListener('mousemove', function(e) {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
                 });
-            });
-            bodyObserver.observe(body, { attributes: true });
+            }
 
             function startWordRotation() {
                 const wordContainer = document.getElementById('word-container');
@@ -407,6 +431,17 @@
                 
                 wordContainer.addEventListener('mouseenter', changeWord);
             }
+            
+            const bodyObserver = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'class' && body.classList.contains('loaded')) {
+                        startWordRotation();
+                        bodyObserver.disconnect();
+                    }
+                });
+            });
+            bodyObserver.observe(body, { attributes: true });
+
 
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
